@@ -25,5 +25,7 @@
 <br>
 
 ## 7. docker-compose 명령어
+1. ./gradlew clean build
+2. docker-compose up -d
 
 <br>
