@@ -2,6 +2,8 @@ package com.preorder.user.service;
 
 import com.preorder.global.config.jwt.JwtTokenUtil;
 import com.preorder.global.email.MailComponents;
+import com.preorder.global.exception.UserException;
+import com.preorder.global.type.ErrorCode;
 import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
 import com.preorder.user.domain.entity.User;
@@ -23,15 +25,15 @@ public class UserService {
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
         if (checkLoginIdDuplicate(req.getEmail())) {
-            return "로그인 아이디가 중복됩니다.";
+            throw new UserException(ErrorCode.REGISTERED_EMAIL);
         }
         // 닉네임 중복 체크
         if (checkNicknameDuplicate(req.getName())) {
-            return "닉네임이 중복됩니다.";
+            throw new UserException(ErrorCode.REGISTERED_NICKNAME);
         }
         // password와 passwordCheck가 같은지 체크
         if (!req.getPassword().equals(req.getPasswordCheck())) {
-            return "바밀번호가 일치하지 않습니다.";
+            throw new UserException(ErrorCode.PASSWORD_CHECK_EXCEPTION);
         }
         String uuid = UUID.randomUUID().toString();
         userRepository.save(req.toEntity(encoder.encode(req.getPassword()), uuid));
@@ -49,18 +51,18 @@ public class UserService {
 
         // 유저를 찾을 수 없음
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
+            throw new UserException(ErrorCode.NOT_FOUND_EMAIL);
         }
 
         User user = optionalUser.get();
 
         // 비밀번호 오류
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
-            throw new RuntimeException();
+            throw new UserException(ErrorCode.WRONG_PASSWORD);
         }
         // 이메일 인증 오류
         if (!user.isEmailCert()){
-            throw new RuntimeException();
+            throw new UserException(ErrorCode.NOT_HAVE_EMAIL_AUTH);
         }
 
         long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
