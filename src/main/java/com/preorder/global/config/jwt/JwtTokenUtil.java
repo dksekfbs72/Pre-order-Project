@@ -6,13 +6,16 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
 
+import static java.lang.System.getenv;
+
 public class JwtTokenUtil {
     // JWT Token 발급
-    public static String createToken(String loginId, String key, long expireTimeMs) {
+    public static String createToken(String loginId, long expireTimeMs) {
         // Claim = Jwt Token에 들어갈 정보
         // Claim에 loginId를 넣어 줌으로써 나중에 loginId를 꺼낼 수 있음
         Claims claims = Jwts.claims();
         claims.put("loginId", loginId);
+        String key = getenv().get("SECRET_KEY");
 
         return Jwts.builder()
                 .setClaims(claims)

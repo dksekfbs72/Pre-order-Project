@@ -1,5 +1,6 @@
 package com.preorder.user.service;
 
+import com.preorder.global.config.jwt.JwtTokenUtil;
 import com.preorder.global.email.MailComponents;
 import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
@@ -16,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
     private final BCryptPasswordEncoder encoder;
     private final MailComponents mailComponents;
 
@@ -44,20 +44,28 @@ public class UserService {
     }
 
 
-    public User login(LoginForm req) {
+    public String login(LoginForm req) {
         Optional<User> optionalUser = userRepository.findByEmail(req.getEmail());
 
+        // 유저를 찾을 수 없음
         if (optionalUser.isEmpty()) {
-            return null;
+            throw new RuntimeException();
         }
 
         User user = optionalUser.get();
 
+        // 비밀번호 오류
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
-            return null;
+            throw new RuntimeException();
+        }
+        // 이메일 인증 오류
+        if (!user.isEmailCert()){
+            throw new RuntimeException();
         }
 
-        return user;
+        long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
+
+        return JwtTokenUtil.createToken(user.getEmail(), expireTimeMs);
     }
 
 
