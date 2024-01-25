@@ -3,6 +3,8 @@ package com.preorder.user.controller;
 import com.preorder.global.dto.WebResponseData;
 import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
+import com.preorder.user.domain.dto.UpdateInfoForm;
+import com.preorder.user.domain.dto.UpdatePasswordForm;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +46,17 @@ public class UserController {
 
     @DeleteMapping("/logout")
     public WebResponseData<String> logout(HttpServletRequest request) {
+        return WebResponseData.ok(userService.logout(request));
+    }
+
+    @PutMapping
+    public WebResponseData<String> updateInfo(@RequestBody UpdateInfoForm updateInfoForm, Authentication auth) {
+        return WebResponseData.ok(userService.updateInfo(updateInfoForm, auth));
+    }
+
+    @PutMapping("/updatePassword")
+    public WebResponseData<String> updatePassword(@RequestBody UpdatePasswordForm updatePasswordForm, Authentication auth, HttpServletRequest request) {
+        userService.updatePassword(updatePasswordForm, auth);
         return WebResponseData.ok(userService.logout(request));
     }
 }

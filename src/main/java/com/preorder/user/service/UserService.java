@@ -6,12 +6,15 @@ import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
 import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
+import com.preorder.user.domain.dto.UpdateInfoForm;
+import com.preorder.user.domain.dto.UpdatePasswordForm;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -103,11 +106,46 @@ public class UserService {
         return "인증 성공";
     }
 
+    public String updateInfo(UpdateInfoForm updateInfoForm, Authentication auth) {
+        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException();
+        }
+        User user = optionalUser.get();
+
+        String newName = updateInfoForm.getName();
+        String newProfileImage = updateInfoForm.getProfileImage();
+        String newDescription = updateInfoForm.getDescription();
+        System.out.println(newName +" "+ newProfileImage + " "+ newDescription);
+        if (newName != null) user.setName(newName);
+        if (newProfileImage != null) user.setProfileImage(newProfileImage);
+        if (newDescription != null) user.setDescription(newDescription);
+
+        userRepository.save(user);
+        return "성공";
+    }
+
     public boolean checkLoginIdDuplicate(String email) {
         return userRepository.existsByEmail(email);
     }
 
     public boolean checkNicknameDuplicate(String name) {
         return userRepository.existsByName(name);
+    }
+
+    public void updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
+        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException();
+        }
+        User user = optionalUser.get();
+
+        if (!encoder.matches(updatePasswordForm.getPassword(), user.getPassword())) {
+            throw new UserException(ErrorCode.WRONG_PASSWORD);
+        }
+
+        user.setPassword(encoder.encode(updatePasswordForm.getNewPassword()));
+
+        userRepository.save(user);
     }
 }
