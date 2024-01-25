@@ -8,17 +8,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Map;
+
+import static java.lang.System.getenv;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfiguration {
-
     private final UserService userService;
-    private static String secretKey = "secret-key";
+    private static String secretKey = getenv().get("SECRET_KEY");
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,6 +29,7 @@ public class SecurityConfig extends WebSecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/user/signup").permitAll()
                         .requestMatchers("/user/login").permitAll()
+                        .requestMatchers("/user/emailAuth").permitAll()
                         .requestMatchers("/user/info").authenticated()
                 )
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)

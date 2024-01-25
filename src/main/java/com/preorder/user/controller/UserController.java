@@ -13,7 +13,7 @@ import com.preorder.user.domain.entity.User;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
-public class UserLoginApiController {
+public class UserController {
 
     private final UserService userService;
 
@@ -38,6 +38,11 @@ public class UserLoginApiController {
         long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
 
         return JwtTokenUtil.createToken(user.getEmail(), secretKey, expireTimeMs);
+    }
+
+    @GetMapping("/emailAuth")
+    public WebResponseData<String> emailAuth(@RequestParam String emailKey){
+        return WebResponseData.ok(userService.emailAuth(emailKey));
     }
 
     @GetMapping("/info")
