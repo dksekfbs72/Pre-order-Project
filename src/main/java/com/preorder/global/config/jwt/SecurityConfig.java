@@ -4,14 +4,13 @@ import com.preorder.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.Map;
 
 import static java.lang.System.getenv;
 
@@ -20,8 +19,8 @@ import static java.lang.System.getenv;
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfiguration {
     private final UserService userService;
-    private static String secretKey = getenv().get("SECRET_KEY");
-
+    private static final String secretKey = getenv().get("SECRET_KEY");
+    private final RedisTemplate<String, Object> redisTemplate;
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -30,9 +29,9 @@ public class SecurityConfig extends WebSecurityConfiguration {
                         .requestMatchers("/user/signup").permitAll()
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/emailAuth").permitAll()
-                        .requestMatchers("/user/info").authenticated()
+                        .requestMatchers("/user/**").authenticated()
                 )
-                .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenFilter(userService, secretKey, redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

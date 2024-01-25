@@ -8,12 +8,18 @@ import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.System.getenv;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     private final MailComponents mailComponents;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -65,9 +72,15 @@ public class UserService {
             throw new UserException(ErrorCode.NOT_HAVE_EMAIL_AUTH);
         }
 
-        long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
+        return JwtTokenUtil.createToken(user.getEmail());
+    }
 
-        return JwtTokenUtil.createToken(user.getEmail(), expireTimeMs);
+    public String logout(HttpServletRequest request) {
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION).split(" ")[1];
+        //User loginUser = userRepository.findByEmail(JwtTokenUtil.getLoginId(token, secretKey)).get();
+        long expiration = JwtTokenUtil.getExpiration(token, getenv().get("SECRET_KEY")).getTime();
+        redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.SECONDS);
+        return "성공";
     }
 
 
@@ -97,5 +110,4 @@ public class UserService {
     public boolean checkNicknameDuplicate(String name) {
         return userRepository.existsByName(name);
     }
-
 }

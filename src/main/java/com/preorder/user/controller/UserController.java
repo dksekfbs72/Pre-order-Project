@@ -5,6 +5,7 @@ import com.preorder.user.domain.dto.LoginForm;
 import com.preorder.user.domain.dto.SingUpForm;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -39,5 +40,10 @@ public class UserController {
 
         return String.format("loginId : %s\nnickname : %s\nrole : %s",
                 loginUser.getEmail(), loginUser.getName(), loginUser.getRole().name());
+    }
+
+    @DeleteMapping("/logout")
+    public WebResponseData<String> logout(HttpServletRequest request) {
+        return WebResponseData.ok(userService.logout(request));
     }
 }

@@ -10,12 +10,13 @@ import static java.lang.System.getenv;
 
 public class JwtTokenUtil {
     // JWT Token 발급
-    public static String createToken(String loginId, long expireTimeMs) {
+    public static String createToken(String loginId) {
         // Claim = Jwt Token에 들어갈 정보
         // Claim에 loginId를 넣어 줌으로써 나중에 loginId를 꺼낼 수 있음
         Claims claims = Jwts.claims();
         claims.put("loginId", loginId);
         String key = getenv().get("SECRET_KEY");
+        long expireTimeMs = 1000 * 60 * 60;
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -31,10 +32,8 @@ public class JwtTokenUtil {
     }
 
     // 밝급된 Token이 만료 시간이 지났는지 체크
-    public static boolean isExpired(String token, String secretKey) {
-        Date expiredDate = extractClaims(token, secretKey).getExpiration();
-        // Token의 만료 날짜가 지금보다 이전인지 check
-        return expiredDate.before(new Date());
+    public static Date getExpiration(String token, String secretKey) {
+        return extractClaims(token, secretKey).getExpiration();
     }
 
     // SecretKey를 사용해 Token Parsing
