@@ -1,7 +1,10 @@
 package com.preorder.user.domain.entity;
 
 import com.preorder.global.type.UserRole;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
 
 @Entity
@@ -22,6 +25,6 @@ public class User {
     private String emailKey;
     private String profileImage;
     private String description;
-    private String post_id;
+    private String postId;
     private UserRole role;
 }

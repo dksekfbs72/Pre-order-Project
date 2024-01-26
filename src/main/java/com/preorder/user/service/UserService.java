@@ -4,20 +4,23 @@ import com.preorder.global.config.jwt.JwtTokenUtil;
 import com.preorder.global.email.MailComponents;
 import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
-import com.preorder.user.domain.dto.LoginForm;
-import com.preorder.user.domain.dto.SingUpForm;
-import com.preorder.user.domain.dto.UpdateInfoForm;
-import com.preorder.user.domain.dto.UpdatePasswordForm;
+import com.preorder.user.domain.dto.*;
+import com.preorder.user.domain.entity.Post;
 import com.preorder.user.domain.entity.User;
+import com.preorder.user.repository.FollowRepository;
+import com.preorder.user.repository.PostRepository;
 import com.preorder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +34,8 @@ public class UserService {
     private final BCryptPasswordEncoder encoder;
     private final MailComponents mailComponents;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FollowRepository followRepository;
+    private final PostRepository postRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -86,15 +91,6 @@ public class UserService {
         return "로그아웃 성공";
     }
 
-
-    public User getLoginUserByLoginId(String email) {
-        if (email == null) return null;
-
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        return optionalUser.orElse(null);
-
-    }
-
     public String emailAuth(String emailKey) {
         Optional<User> optionalUser = userRepository.findByEmailKey(emailKey);
         if (optionalUser.isEmpty()) {
@@ -107,11 +103,7 @@ public class UserService {
     }
 
     public String updateInfo(UpdateInfoForm updateInfoForm, Authentication auth) {
-        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
-        }
-        User user = optionalUser.get();
+        User user = whoIAm(auth);
 
         String newName = updateInfoForm.getName();
         String newProfileImage = updateInfoForm.getProfileImage();
@@ -125,20 +117,8 @@ public class UserService {
         return "내 정보 수정 성공";
     }
 
-    public boolean checkLoginIdDuplicate(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    public boolean checkNicknameDuplicate(String name) {
-        return userRepository.existsByName(name);
-    }
-
     public String updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
-        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
-        }
-        User user = optionalUser.get();
+        User user = whoIAm(auth);
 
         if (!encoder.matches(updatePasswordForm.getPassword(), user.getPassword())) {
             throw new UserException(ErrorCode.WRONG_PASSWORD);
@@ -149,5 +129,39 @@ public class UserService {
         userRepository.save(user);
 
         return "비밀번호 수정 성공";
+    }
+
+    public Page<FeedDto> getMyFeed(Authentication auth, int page, int size) {
+        User user = whoIAm(auth);
+        System.out.println(1);
+        List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
+        System.out.println(2);
+        Page<Post> postPage = postRepository
+                .findByUserIdInOrderByCreateAtDesc(friends, PageRequest.of(page, size));
+        System.out.println(3);
+        return FeedDto.toPageDto(postPage);
+    }
+
+    public User whoIAm(Authentication auth) {
+        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException();
+        }
+        return optionalUser.get();
+    }
+
+    public User getLoginUserByLoginId(String email) {
+        if (email == null) return null;
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        return optionalUser.orElse(null);
+    }
+
+    public boolean checkLoginIdDuplicate(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean checkNicknameDuplicate(String name) {
+        return userRepository.existsByName(name);
     }
 }
