@@ -1,10 +1,7 @@
 package com.preorder.user.domain.entity;
 
 import com.preorder.global.type.UserRole;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -16,16 +13,16 @@ import lombok.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "user_id")
+    private Long id;
 
-    String name;
-    String email;
-    String password;
-    boolean emailCert;
-    String emailKey;
-    String profileImage;
-    String description;
-    String follow_id;
-    String post_id;
-    UserRole role;
+    private String name;
+    private String email;
+    private String password;
+    private boolean emailCert;
+    private String emailKey;
+    private String profileImage;
+    private String description;
+    private String post_id;
+    private UserRole role;
 }
