@@ -12,13 +12,13 @@ import lombok.*;
 public class Follow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    User userId;
+    private User userId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    User followId;
+    @JoinColumn(name = "follow_user_id")
+    private User followId;
 }

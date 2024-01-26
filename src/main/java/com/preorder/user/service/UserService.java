@@ -83,7 +83,7 @@ public class UserService {
         //User loginUser = userRepository.findByEmail(JwtTokenUtil.getLoginId(token, secretKey)).get();
         long expiration = JwtTokenUtil.getExpiration(token, getenv().get("SECRET_KEY")).getTime();
         redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.SECONDS);
-        return "성공";
+        return "로그아웃 성공";
     }
 
 
@@ -103,7 +103,7 @@ public class UserService {
         User user = optionalUser.get();
         user.setEmailCert(true);
         userRepository.save(user);
-        return "인증 성공";
+        return "이메일 인증 성공";
     }
 
     public String updateInfo(UpdateInfoForm updateInfoForm, Authentication auth) {
@@ -122,7 +122,7 @@ public class UserService {
         if (newDescription != null) user.setDescription(newDescription);
 
         userRepository.save(user);
-        return "성공";
+        return "내 정보 수정 성공";
     }
 
     public boolean checkLoginIdDuplicate(String email) {
@@ -133,7 +133,7 @@ public class UserService {
         return userRepository.existsByName(name);
     }
 
-    public void updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
+    public String updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
         Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
         if (optionalUser.isEmpty()) {
             throw new RuntimeException();
@@ -147,5 +147,7 @@ public class UserService {
         user.setPassword(encoder.encode(updatePasswordForm.getNewPassword()));
 
         userRepository.save(user);
+
+        return "비밀번호 수정 성공";
     }
 }

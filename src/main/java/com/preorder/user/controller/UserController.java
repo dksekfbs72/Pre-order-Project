@@ -56,7 +56,7 @@ public class UserController {
 
     @PutMapping("/updatePassword")
     public WebResponseData<String> updatePassword(@RequestBody UpdatePasswordForm updatePasswordForm, Authentication auth, HttpServletRequest request) {
-        userService.updatePassword(updatePasswordForm, auth);
-        return WebResponseData.ok(userService.logout(request));
+        userService.logout(request);
+        return WebResponseData.ok(userService.updatePassword(updatePasswordForm, auth));
     }
 }
