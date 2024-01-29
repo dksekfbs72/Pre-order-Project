@@ -8,7 +8,6 @@ import com.preorder.user.domain.dto.*;
 import com.preorder.user.domain.entity.Post;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.repository.FollowRepository;
-import com.preorder.user.repository.PostRepository;
 import com.preorder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.getenv;
@@ -35,7 +32,6 @@ public class UserService {
     private final MailComponents mailComponents;
     private final RedisTemplate<String, Object> redisTemplate;
     private final FollowRepository followRepository;
-    private final PostRepository postRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -131,15 +127,22 @@ public class UserService {
         return "비밀번호 수정 성공";
     }
 
-    public Page<FeedDto> getMyFeed(Authentication auth, int page, int size) {
+    public Page<PostDto> getMyFeed(Authentication auth, int page, int size) {
         User user = whoIAm(auth);
-        System.out.println(1);
         List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
-        System.out.println(2);
-        Page<Post> postPage = postRepository
-                .findByUserIdInOrderByCreateAtDesc(friends, PageRequest.of(page, size));
-        System.out.println(3);
-        return FeedDto.toPageDto(postPage);
+        List<Post> postList = new ArrayList<>();
+        for (User cur : friends) {
+            postList.addAll(cur.getPostId());
+        }
+        postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
+        return PostDto.toPageDto(postList, PageRequest.of(page, size));
+    }
+
+    public String writePost(Authentication auth, PostForm postForm) {
+        User user = whoIAm(auth);
+        user.getPostId().add(postForm.toEntity(user));
+        userRepository.save(user);
+        return "성공";
     }
 
     public User whoIAm(Authentication auth) {
@@ -164,4 +167,6 @@ public class UserService {
     public boolean checkNicknameDuplicate(String name) {
         return userRepository.existsByName(name);
     }
+
+
 }

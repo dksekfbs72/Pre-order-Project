@@ -59,10 +59,18 @@ public class UserController {
     }
 
     @GetMapping("/feed")
-    public WebResponseData<Page<FeedDto>> getMyFeed(
+    public WebResponseData<Page<PostDto>> getMyFeed(
             Authentication auth,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return WebResponseData.ok(userService.getMyFeed(auth, page, size));
+    }
+
+    @PostMapping("/post")
+    public WebResponseData<String> writePost(
+            Authentication auth,
+            @RequestBody PostForm postForm
+    ) {
+      return WebResponseData.ok(userService.writePost(auth, postForm));
     }
 }
