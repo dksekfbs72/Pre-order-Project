@@ -29,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfiguration {
                         .requestMatchers("/user/signup").permitAll()
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/emailAuth").permitAll()
-                        .requestMatchers("/user/**").authenticated()
+                        .requestMatchers("/**").authenticated()
                 )
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey, redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 .build();

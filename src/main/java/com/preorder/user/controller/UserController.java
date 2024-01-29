@@ -1,14 +1,12 @@
 package com.preorder.user.controller;
 
 import com.preorder.global.dto.WebResponseData;
-import com.preorder.user.domain.dto.LoginForm;
-import com.preorder.user.domain.dto.SingUpForm;
-import com.preorder.user.domain.dto.UpdateInfoForm;
-import com.preorder.user.domain.dto.UpdatePasswordForm;
+import com.preorder.user.domain.dto.*;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,7 +54,23 @@ public class UserController {
 
     @PutMapping("/updatePassword")
     public WebResponseData<String> updatePassword(@RequestBody UpdatePasswordForm updatePasswordForm, Authentication auth, HttpServletRequest request) {
-        userService.updatePassword(updatePasswordForm, auth);
-        return WebResponseData.ok(userService.logout(request));
+        userService.logout(request);
+        return WebResponseData.ok(userService.updatePassword(updatePasswordForm, auth));
+    }
+
+    @GetMapping("/feed")
+    public WebResponseData<Page<FeedPostDto>> getMyFeed(
+            Authentication auth,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return WebResponseData.ok(userService.getMyFeed(auth, page, size));
+    }
+
+    @PostMapping("/post")
+    public WebResponseData<String> writePost(
+            Authentication auth,
+            @RequestBody PostForm postForm
+    ) {
+      return WebResponseData.ok(userService.writePost(auth, postForm));
     }
 }

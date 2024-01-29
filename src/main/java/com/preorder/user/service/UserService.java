@@ -4,22 +4,23 @@ import com.preorder.global.config.jwt.JwtTokenUtil;
 import com.preorder.global.email.MailComponents;
 import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
-import com.preorder.user.domain.dto.LoginForm;
-import com.preorder.user.domain.dto.SingUpForm;
-import com.preorder.user.domain.dto.UpdateInfoForm;
-import com.preorder.user.domain.dto.UpdatePasswordForm;
+import com.preorder.user.domain.dto.*;
+import com.preorder.user.domain.entity.Post;
 import com.preorder.user.domain.entity.User;
+import com.preorder.user.repository.FollowRepository;
+import com.preorder.user.repository.PostRepository;
 import com.preorder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.getenv;
@@ -31,6 +32,8 @@ public class UserService {
     private final BCryptPasswordEncoder encoder;
     private final MailComponents mailComponents;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FollowRepository followRepository;
+    private final PostRepository postRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -83,16 +86,7 @@ public class UserService {
         //User loginUser = userRepository.findByEmail(JwtTokenUtil.getLoginId(token, secretKey)).get();
         long expiration = JwtTokenUtil.getExpiration(token, getenv().get("SECRET_KEY")).getTime();
         redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.SECONDS);
-        return "성공";
-    }
-
-
-    public User getLoginUserByLoginId(String email) {
-        if (email == null) return null;
-
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        return optionalUser.orElse(null);
-
+        return "로그아웃 성공";
     }
 
     public String emailAuth(String emailKey) {
@@ -103,15 +97,11 @@ public class UserService {
         User user = optionalUser.get();
         user.setEmailCert(true);
         userRepository.save(user);
-        return "인증 성공";
+        return "이메일 인증 성공";
     }
 
     public String updateInfo(UpdateInfoForm updateInfoForm, Authentication auth) {
-        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
-        }
-        User user = optionalUser.get();
+        User user = whoIAm(auth);
 
         String newName = updateInfoForm.getName();
         String newProfileImage = updateInfoForm.getProfileImage();
@@ -122,7 +112,53 @@ public class UserService {
         if (newDescription != null) user.setDescription(newDescription);
 
         userRepository.save(user);
+        return "내 정보 수정 성공";
+    }
+
+    public String updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
+        User user = whoIAm(auth);
+
+        if (!encoder.matches(updatePasswordForm.getPassword(), user.getPassword())) {
+            throw new UserException(ErrorCode.WRONG_PASSWORD);
+        }
+
+        user.setPassword(encoder.encode(updatePasswordForm.getNewPassword()));
+
+        userRepository.save(user);
+
+        return "비밀번호 수정 성공";
+    }
+
+    public Page<FeedPostDto> getMyFeed(Authentication auth, int page, int size) {
+        User user = whoIAm(auth);
+        List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
+        List<Post> postList = new ArrayList<>();
+        for (User cur : friends) {
+            postList.addAll(cur.getPostId());
+        }
+        postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
+        return FeedPostDto.toPageDto(postList, PageRequest.of(page, size));
+    }
+
+    public String writePost(Authentication auth, PostForm postForm) {
+        User user = whoIAm(auth);
+        postRepository.save(postForm.toEntity(user));
         return "성공";
+    }
+
+    public User whoIAm(Authentication auth) {
+        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException();
+        }
+        return optionalUser.get();
+    }
+
+    public User getLoginUserByLoginId(String email) {
+        if (email == null) return null;
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        return optionalUser.orElse(null);
     }
 
     public boolean checkLoginIdDuplicate(String email) {
@@ -133,19 +169,5 @@ public class UserService {
         return userRepository.existsByName(name);
     }
 
-    public void updatePassword(UpdatePasswordForm updatePasswordForm, Authentication auth) {
-        Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
-        }
-        User user = optionalUser.get();
 
-        if (!encoder.matches(updatePasswordForm.getPassword(), user.getPassword())) {
-            throw new UserException(ErrorCode.WRONG_PASSWORD);
-        }
-
-        user.setPassword(encoder.encode(updatePasswordForm.getNewPassword()));
-
-        userRepository.save(user);
-    }
 }
