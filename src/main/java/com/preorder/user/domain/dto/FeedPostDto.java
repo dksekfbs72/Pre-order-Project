@@ -16,39 +16,39 @@ import java.util.List;
 
 @Builder
 @Getter
-@JsonSerialize(using = PostDto.FeedDtoSerializer.class)
-public class PostDto {
+@JsonSerialize(using = FeedPostDto.FeedDtoSerializer.class)
+public class FeedPostDto {
     private Long postId;
     private String title;
     private String userName;
 
-    private static PostDto toDto(Post post){
-        return PostDto.builder()
+    private static FeedPostDto toDto(Post post){
+        return FeedPostDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
                 .userName(post.getUserName())
                 .build();
     }
-    public static Page<PostDto> toPageDto(List<Post> postList, Pageable pageable) {
+    public static Page<FeedPostDto> toPageDto(List<Post> postList, Pageable pageable) {
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), postList.size());
 
-        List<PostDto> postDtoList = postList.subList(start, end)
+        List<FeedPostDto> feedPostDtoList = postList.subList(start, end)
                 .stream()
-                .map(PostDto::toDto)
+                .map(FeedPostDto::toDto)
                 .toList();
 
-        return new PageImpl<>(postDtoList, pageable, postList.size());
+        return new PageImpl<>(feedPostDtoList, pageable, postList.size());
     }
 
-    public static class FeedDtoSerializer extends JsonSerializer<PostDto> {
+    public static class FeedDtoSerializer extends JsonSerializer<FeedPostDto> {
         @Override
-        public void serialize(PostDto postDto, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+        public void serialize(FeedPostDto feedPostDto, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeNumberField("postId", postDto.getPostId());
-            jsonGenerator.writeStringField("title", postDto.getTitle());
-            jsonGenerator.writeStringField("userName", postDto.getUserName());
+            jsonGenerator.writeNumberField("postId", feedPostDto.getPostId());
+            jsonGenerator.writeStringField("title", feedPostDto.getTitle());
+            jsonGenerator.writeStringField("userName", feedPostDto.getUserName());
             jsonGenerator.writeEndObject();
         }
     }

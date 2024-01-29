@@ -8,6 +8,7 @@ import com.preorder.user.domain.dto.*;
 import com.preorder.user.domain.entity.Post;
 import com.preorder.user.domain.entity.User;
 import com.preorder.user.repository.FollowRepository;
+import com.preorder.user.repository.PostRepository;
 import com.preorder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class UserService {
     private final MailComponents mailComponents;
     private final RedisTemplate<String, Object> redisTemplate;
     private final FollowRepository followRepository;
+    private final PostRepository postRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -127,7 +129,7 @@ public class UserService {
         return "비밀번호 수정 성공";
     }
 
-    public Page<PostDto> getMyFeed(Authentication auth, int page, int size) {
+    public Page<FeedPostDto> getMyFeed(Authentication auth, int page, int size) {
         User user = whoIAm(auth);
         List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
         List<Post> postList = new ArrayList<>();
@@ -135,13 +137,12 @@ public class UserService {
             postList.addAll(cur.getPostId());
         }
         postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
-        return PostDto.toPageDto(postList, PageRequest.of(page, size));
+        return FeedPostDto.toPageDto(postList, PageRequest.of(page, size));
     }
 
     public String writePost(Authentication auth, PostForm postForm) {
         User user = whoIAm(auth);
-        user.getPostId().add(postForm.toEntity(user));
-        userRepository.save(user);
+        postRepository.save(postForm.toEntity(user));
         return "성공";
     }
 

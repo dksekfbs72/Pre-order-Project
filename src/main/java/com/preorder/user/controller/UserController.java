@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping("/feed")
-    public WebResponseData<Page<PostDto>> getMyFeed(
+    public WebResponseData<Page<FeedPostDto>> getMyFeed(
             Authentication auth,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
