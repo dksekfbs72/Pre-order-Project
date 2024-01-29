@@ -3,6 +3,8 @@ package com.preorder.user.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Builder
 @Getter
@@ -21,4 +23,12 @@ public class Follow {
     @ManyToOne
     @JoinColumn(name = "follow_user_id")
     private User followId;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createAt = LocalDateTime.now();
+    }
 }

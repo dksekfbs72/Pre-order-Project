@@ -3,7 +3,7 @@ package com.preorder.user.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -25,5 +25,10 @@ public class Comment {
     private Post post;
 
     private String text;
-    private Date createAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createAt;
+    @PrePersist
+    protected void onCreate() {
+        createAt = LocalDateTime.now();
+    }
 }

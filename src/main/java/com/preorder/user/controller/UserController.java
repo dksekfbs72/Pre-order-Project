@@ -73,4 +73,28 @@ public class UserController {
     ) {
       return WebResponseData.ok(userService.writePost(auth, postForm));
     }
+
+    @PostMapping("/likePost")
+    public WebResponseData<String> likePost(
+            Authentication auth,
+            @RequestParam long postId
+    ) {
+        return WebResponseData.ok(userService.likePost(auth, postId));
+    }
+    @PostMapping("/likeComment")
+    public WebResponseData<String> likeComment(
+            Authentication auth,
+            @RequestParam long commentId
+    ) {
+        return WebResponseData.ok(userService.likeComment(auth, commentId));
+    }
+
+    @PostMapping("/comment")
+    public WebResponseData<String> writeComment(
+            Authentication auth,
+            @RequestParam long postId,
+            @RequestBody CommentForm commentForm
+    ) {
+        return WebResponseData.ok(userService.writeComment(auth, postId, commentForm));
+    }
 }

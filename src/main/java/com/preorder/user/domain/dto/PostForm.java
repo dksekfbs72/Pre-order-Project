@@ -5,8 +5,6 @@ import com.preorder.user.domain.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Date;
-
 @Builder
 @Getter
 public class PostForm {
@@ -19,7 +17,6 @@ public class PostForm {
                 .title(this.title)
                 .text(this.text)
                 .userName(user.getName())
-                .createAt(new Date())
                 .build();
     }
 }

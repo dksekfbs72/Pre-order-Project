@@ -5,11 +5,11 @@ import com.preorder.global.email.MailComponents;
 import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
 import com.preorder.user.domain.dto.*;
+import com.preorder.user.domain.entity.Comment;
+import com.preorder.user.domain.entity.LikeTable;
 import com.preorder.user.domain.entity.Post;
 import com.preorder.user.domain.entity.User;
-import com.preorder.user.repository.FollowRepository;
-import com.preorder.user.repository.PostRepository;
-import com.preorder.user.repository.UserRepository;
+import com.preorder.user.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +34,8 @@ public class UserService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -146,6 +148,27 @@ public class UserService {
         return "성공";
     }
 
+    public String likePost(Authentication auth, long postId) {
+        likeRepository.save(LikeTable.builder()
+                .user(whoIAm(auth))
+                .post(getThisPost(postId))
+                .build());
+        return "성공";
+    }
+
+    public String likeComment(Authentication auth, long commentId) {
+        User user = whoIAm(auth);
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new UserException(ErrorCode.NOT_FOUND_POST);
+        }
+
+        likeRepository.save(LikeTable.builder()
+                .user(user)
+                .comment(optionalComment.get())
+                .build());
+        return "성공";
+    }
     public User whoIAm(Authentication auth) {
         Optional<User> optionalUser = userRepository.findByEmail(auth.getName());
         if (optionalUser.isEmpty()) {
@@ -160,6 +183,13 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         return optionalUser.orElse(null);
     }
+    public Post getThisPost(long postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()) {
+            throw new UserException(ErrorCode.NOT_FOUND_POST);
+        }
+        return optionalPost.get();
+    }
 
     public boolean checkLoginIdDuplicate(String email) {
         return userRepository.existsByEmail(email);
@@ -169,5 +199,8 @@ public class UserService {
         return userRepository.existsByName(name);
     }
 
-
+    public String writeComment(Authentication auth, long postId, CommentForm commentForm) {
+        commentRepository.save(commentForm.toEntity(whoIAm(auth), getThisPost(postId)));
+        return "성공";
+    }
 }
