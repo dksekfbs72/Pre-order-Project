@@ -5,10 +5,7 @@ import com.preorder.global.email.MailComponents;
 import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
 import com.preorder.user.domain.dto.*;
-import com.preorder.user.domain.entity.Comment;
-import com.preorder.user.domain.entity.LikeTable;
-import com.preorder.user.domain.entity.Post;
-import com.preorder.user.domain.entity.User;
+import com.preorder.user.domain.entity.*;
 import com.preorder.user.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -131,15 +128,42 @@ public class UserService {
         return "비밀번호 수정 성공";
     }
 
-    public Page<FeedPostDto> getMyFeed(Authentication auth, int page, int size) {
+    public FeedDto getMyFeed(Authentication auth, int page, int size) {
         User user = whoIAm(auth);
         List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
+
         List<Post> postList = new ArrayList<>();
+        List<Follow> followList = new ArrayList<>();
+        List<Comment> commentList = new ArrayList<>();
+        List<LikeTable> likeList = new ArrayList<>();
+
         for (User cur : friends) {
+            followList.addAll(cur.getFollowId());
             postList.addAll(cur.getPostId());
+            commentList.addAll(cur.getCommentId());
+            likeList.addAll(cur.getLikeTableId());
         }
+
         postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
-        return FeedPostDto.toPageDto(postList, PageRequest.of(page, size));
+        followList.sort(Comparator.comparing(Follow::getCreateAt).reversed());
+        likeList.sort(Comparator.comparing(LikeTable::getCreateAt).reversed());
+        commentList.sort(Comparator.comparing(Comment::getCreateAt).reversed());
+
+        Page<FeedPostDto> feedPostDtoPage = FeedPostDto.toPageDto(postList,
+                PageRequest.of(size * page < postList.size() ? page : (postList.size()-1)/size, size));
+        Page<FeedFollowDto> feedFollowDtoPage = FeedFollowDto.toPageDto(followList,
+                PageRequest.of(size * page < followList.size() ? page : (followList.size()-1)/size, size));
+        Page<FeedLikeDto> feedLikeDtoPage = FeedLikeDto.toPageDto(likeList,
+                PageRequest.of(size * page < likeList.size() ? page : (likeList.size()-1)/size, size));
+        Page<FeedCommentDto> feedCommentDtoPage = FeedCommentDto.toPageDto(commentList,
+                PageRequest.of(size * page < commentList.size() ? page : (commentList.size()-1)/size, size));
+
+        return FeedDto.builder()
+                .postList(feedPostDtoPage)
+                .followList(feedFollowDtoPage)
+                .likeList(feedLikeDtoPage)
+                .commentList(feedCommentDtoPage)
+                .build();
     }
 
     public String writePost(Authentication auth, PostForm postForm) {

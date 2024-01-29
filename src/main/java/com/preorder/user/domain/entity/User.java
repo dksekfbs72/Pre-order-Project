@@ -30,5 +30,8 @@ public class User {
     private List<LikeTable> likeTableId;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> commentId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Follow> followId;
+
     private UserRole role;
 }

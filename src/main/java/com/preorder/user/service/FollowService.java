@@ -26,11 +26,11 @@ public class FollowService {
         }
         User user = optionalUser.get();
         User followUser = optionalFollowUser.get();
-        if (followRepository.existsByUserIdAndFollowId(user, followUser)){
+        if (followRepository.existsByUserAndFollowId(user, followUser)){
             throw new UserException(ErrorCode.ALREADY_FOLLOW_USER);
         }
         Follow follow = Follow.builder()
-                    .userId(user)
+                    .user(user)
                     .followId(followUser)
                     .build();
         followRepository.save(follow);

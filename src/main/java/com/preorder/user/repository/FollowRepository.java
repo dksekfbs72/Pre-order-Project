@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    boolean existsByUserIdAndFollowId(User user, User followUser);
+    boolean existsByUserAndFollowId(User user, User followUser);
     @Query(value = "select f.follow_user_id from follow f where f.user_id = :user", nativeQuery = true)
     List<Long> findUsersByUserId(@Param(value = "user") Long user);
 }
