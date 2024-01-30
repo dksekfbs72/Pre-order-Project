@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(indexes = {
+        @Index(name = "user_idx", columnList = "user")
+})
 public class LikeTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

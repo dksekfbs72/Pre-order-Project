@@ -6,6 +6,7 @@ import com.preorder.user.domain.entity.User;
 import com.preorder.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping("/feed")
-    public WebResponseData<FeedDto> getMyFeed(
+    public WebResponseData<Page<FeedDto>> getMyFeed(
             Authentication auth,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {

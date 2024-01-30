@@ -1,10 +1,11 @@
 package com.preorder.user.domain.entity;
 
 import com.preorder.global.type.UserRole;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -24,14 +25,6 @@ public class User {
     private String emailKey;
     private String profileImage;
     private String description;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Post> postId;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LikeTable> likeTableId;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Comment> commentId;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Follow> followId;
 
     private UserRole role;
 }

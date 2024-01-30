@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(indexes = {
+        @Index(name = "user_asc", columnList = "user")
+})
 public class Follow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

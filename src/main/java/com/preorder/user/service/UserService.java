@@ -6,6 +6,7 @@ import com.preorder.global.exception.UserException;
 import com.preorder.global.type.ErrorCode;
 import com.preorder.user.domain.dto.*;
 import com.preorder.user.domain.entity.*;
+import com.preorder.user.domain.type.FeedType;
 import com.preorder.user.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
+    private final ActivityRepository activityRepository;
 
     public String signUp(SingUpForm req) {
         // loginId 중복 체크
@@ -128,54 +130,43 @@ public class UserService {
         return "비밀번호 수정 성공";
     }
 
-    public FeedDto getMyFeed(Authentication auth, int page, int size) {
+    public Page<FeedDto> getMyFeed(Authentication auth, int page, int size) {
         User user = whoIAm(auth);
         List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
+        List<User> followers = userRepository.findAllById(followRepository.findUserByFollowId(user.getId()));
+        friends.addAll(followers);
+        friends.add(user);
 
-        List<Post> postList = new ArrayList<>();
-        List<Follow> followList = new ArrayList<>();
-        List<Comment> commentList = new ArrayList<>();
-        List<LikeTable> likeList = new ArrayList<>();
 
-        for (User cur : friends) {
-            followList.addAll(cur.getFollowId());
-            postList.addAll(cur.getPostId());
-            commentList.addAll(cur.getCommentId());
-            likeList.addAll(cur.getLikeTableId());
-        }
+        Page<Activity> activityPage = activityRepository.findAllByUserInOrderByCreateAtDesc(friends, PageRequest.of(page, size));
 
-        postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
-        followList.sort(Comparator.comparing(Follow::getCreateAt).reversed());
-        likeList.sort(Comparator.comparing(LikeTable::getCreateAt).reversed());
-        commentList.sort(Comparator.comparing(Comment::getCreateAt).reversed());
-
-        Page<FeedPostDto> feedPostDtoPage = FeedPostDto.toPageDto(postList,
-                PageRequest.of(size * page < postList.size() ? page : (postList.size()-1)/size, size));
-        Page<FeedFollowDto> feedFollowDtoPage = FeedFollowDto.toPageDto(followList,
-                PageRequest.of(size * page < followList.size() ? page : (followList.size()-1)/size, size));
-        Page<FeedLikeDto> feedLikeDtoPage = FeedLikeDto.toPageDto(likeList,
-                PageRequest.of(size * page < likeList.size() ? page : (likeList.size()-1)/size, size));
-        Page<FeedCommentDto> feedCommentDtoPage = FeedCommentDto.toPageDto(commentList,
-                PageRequest.of(size * page < commentList.size() ? page : (commentList.size()-1)/size, size));
-
-        return FeedDto.builder()
-                .postList(feedPostDtoPage)
-                .followList(feedFollowDtoPage)
-                .likeList(feedLikeDtoPage)
-                .commentList(feedCommentDtoPage)
-                .build();
+        return FeedDto.toPage(activityPage);
     }
 
     public String writePost(Authentication auth, PostForm postForm) {
         User user = whoIAm(auth);
-        postRepository.save(postForm.toEntity(user));
+        long postId = postRepository.save(postForm.toEntity(user)).getId();
+        activityRepository.save(Activity.builder()
+                        .feedType(FeedType.POST)
+                        .title(postForm.getTitle())
+                        .user(user)
+                        .postId(postId)
+                .build());
         return "성공";
     }
 
     public String likePost(Authentication auth, long postId) {
+        User user = whoIAm(auth);
+        Post post = getThisPost(postId);
+        activityRepository.save(Activity.builder()
+                        .feedType(FeedType.LIKE)
+                        .user(user)
+                        .to(post.getUserName())
+                        .postId(post.getId())
+                .build());
         likeRepository.save(LikeTable.builder()
-                .user(whoIAm(auth))
-                .post(getThisPost(postId))
+                .user(user)
+                .post(post)
                 .build());
         return "성공";
     }
@@ -186,10 +177,16 @@ public class UserService {
         if (optionalComment.isEmpty()) {
             throw new UserException(ErrorCode.NOT_FOUND_POST);
         }
-
+        Comment comment = optionalComment.get();
+        activityRepository.save(Activity.builder()
+                .feedType(FeedType.LIKE)
+                .user(user)
+                .to(comment.getUser().getName())
+                .commentId(comment.getId())
+                .build());
         likeRepository.save(LikeTable.builder()
                 .user(user)
-                .comment(optionalComment.get())
+                .comment(comment)
                 .build());
         return "성공";
     }
@@ -224,7 +221,15 @@ public class UserService {
     }
 
     public String writeComment(Authentication auth, long postId, CommentForm commentForm) {
-        commentRepository.save(commentForm.toEntity(whoIAm(auth), getThisPost(postId)));
+        User user = whoIAm(auth);
+        Post post = getThisPost(postId);
+        activityRepository.save(Activity.builder()
+                        .feedType(FeedType.COMMENT)
+                        .user(user)
+                        .to(post.getUserName())
+                        .postId(post.getId())
+                        .commentId(commentRepository.save(commentForm.toEntity(user, post)).getId())
+                .build());
         return "성공";
     }
 }
