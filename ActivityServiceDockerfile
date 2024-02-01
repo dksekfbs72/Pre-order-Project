@@ -1,0 +1,4 @@
+FROM openjdk:17
+ARG JAR_FILE=ActivityService/build/libs/ActivityService-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} activityservice.jar
+ENTRYPOINT ["java", "-jar", "/activityservice.jar"]
