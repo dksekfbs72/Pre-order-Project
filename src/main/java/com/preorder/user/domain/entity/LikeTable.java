@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(indexes = {
-        @Index(name = "user_idx", columnList = "user")
+        @Index(name = "user_idx", columnList = "user_id")
 })
 public class LikeTable {
     @Id

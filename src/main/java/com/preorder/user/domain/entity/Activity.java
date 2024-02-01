@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Table(indexes = {
         @Index(name = "create_at_desc", columnList = "create_at DESC"),
-        @Index(name = "user_asc", columnList = "user")
+        @Index(name = "user_asc", columnList = "user_id")
 })
 public class Activity {
     @Id

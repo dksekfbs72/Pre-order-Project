@@ -8,15 +8,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
     boolean existsByUserAndFollowId(User user, User followUser);
     @Query(value = "select f.follow_user_id from follow f where f.user_id = :user", nativeQuery = true)
-    List<Long> findUsersByUserId(@Param(value = "user") Long user);
+    Optional<List<Long>> findUsersByUserId(@Param(value = "user") Long user);
 
     @Query(value = "select f.user_id from follow f where f.follow_user_id = :user", nativeQuery = true)
-    List<Long> findUserByFollowId(@Param(value = "user") Long user);
+    Optional<List<Long>> findUserByFollowId(@Param(value = "user") Long user);
 }
 
 

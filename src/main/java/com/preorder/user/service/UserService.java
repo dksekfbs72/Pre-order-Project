@@ -132,9 +132,12 @@ public class UserService {
 
     public Page<FeedDto> getMyFeed(Authentication auth, int page, int size) {
         User user = whoIAm(auth);
-        List<User> friends = userRepository.findAllById(followRepository.findUsersByUserId(user.getId()));
-        List<User> followers = userRepository.findAllById(followRepository.findUserByFollowId(user.getId()));
-        friends.addAll(followers);
+        List<User> friends = new ArrayList<>();
+        friends.add(user);
+        Optional<List<Long>> following = followRepository.findUsersByUserId(user.getId());
+        Optional<List<Long>> follower = followRepository.findUserByFollowId(user.getId());
+        following.ifPresent(longs -> friends.addAll(userRepository.findAllById(longs)));
+        follower.ifPresent(longs -> friends.addAll(userRepository.findAllById(longs)));
         friends.add(user);
 
 
