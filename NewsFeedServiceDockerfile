@@ -1,0 +1,4 @@
+FROM openjdk:17
+ARG JAR_FILE=NewsFeedService/build/libs/NewsFeedService-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} newsfeedservice.jar
+ENTRYPOINT ["java", "-jar", "/newsfeedservice.jar"]
