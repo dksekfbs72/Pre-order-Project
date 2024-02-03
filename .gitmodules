@@ -1,0 +1,9 @@
+[submodule "UserService"]
+	path = UserService
+	url = https://github.com/dksekfbs72/UserService
+[submodule "ActivityService"]
+	path = ActivityService
+	url = https://github.com/dksekfbs72/ActivityService
+[submodule "NewsFeedService"]
+	path = NewsFeedService
+	url = https://github.com/dksekfbs72/NewsFeedService
