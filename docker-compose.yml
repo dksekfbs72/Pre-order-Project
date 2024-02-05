@@ -1,8 +1,8 @@
-version: "24.0.7"
+version: "3.9"
 
 services:
-  mysql:
-    container_name: preorder-db
+  user_service_db:
+    container_name: user-db
     image: mysql:8.0.31
     ports:
       - "3306:3306"
@@ -18,6 +18,58 @@ services:
       - "--collation-server=utf8mb4_unicode_ci"
     networks:
       - preorder-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+      interval: 5s
+
+
+  activity_service_db:
+    container_name: activity-db
+    image: mysql:8.0.31
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=preorder
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=rootPassword
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    networks:
+      - preorder-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 5
+      interval: 5s
+
+  news_feed_service_db:
+    container_name: news_feed-db
+    image: mysql:8.0.31
+    ports:
+      - "3308:3306"
+    environment:
+      - MYSQL_DATABASE=preorder
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=rootPassword
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    networks:
+      - preorder-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 5
+      interval: 5s
 
   redis:
     image: redis:latest
@@ -37,15 +89,15 @@ services:
       - preorder.env
     environment:
       - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/preorder
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user_service_db:3306/preorder
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=rootPassword
       - SPRING_DATA_REDIS_HOST=redis
     networks:
       - preorder-network
     depends_on:
-      - mysql
-      - redis
+      user_service_db:
+        condition: service_healthy
 
   activity_service:
     container_name: activityService
@@ -58,15 +110,15 @@ services:
       - preorder.env
     environment:
       - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/preorder
+      - SPRING_DATASOURCE_URL=jdbc:mysql://activity_service_db:3306/preorder
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=rootPassword
       - SPRING_DATA_REDIS_HOST=redis
     networks:
       - preorder-network
     depends_on:
-      - mysql
-      - redis
+      activity_service_db:
+        condition: service_healthy
 
   news_feed_service:
     container_name: newsFeedService
@@ -79,15 +131,15 @@ services:
       - preorder.env
     environment:
       - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/preorder
+      - SPRING_DATASOURCE_URL=jdbc:mysql://news_feed_service_db:3306/preorder
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=rootPassword
       - SPRING_DATA_REDIS_HOST=redis
     networks:
       - preorder-network
     depends_on:
-      - mysql
-      - redis
+      news_feed_service_db:
+        condition: service_healthy
 
 networks:
   preorder-network:
