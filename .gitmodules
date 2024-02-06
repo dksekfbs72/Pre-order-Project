@@ -7,3 +7,6 @@
 [submodule "NewsFeedService"]
 	path = NewsFeedService
 	url = https://github.com/dksekfbs72/NewsFeedService
+[submodule "ApiGateway"]
+	path = ApiGateway
+	url = https://github.com/dksekfbs72/ApiGateway.git
