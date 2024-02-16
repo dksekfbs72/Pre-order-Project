@@ -37,6 +37,6 @@ https://dull-apogee-965.notion.site/6df35cdb93dd43939d1c37b998f14074?v=d1df5713b
 <br>
 
 ## 5. 개발 환경
-JavaVersion - 17\n
-SpringBoot - 3.2.2\n
-DockerVersion - 3.9\n  
+- JavaVersion - 17
+- SpringBoot - 3.2.2
+- DockerVersion - 3.9
