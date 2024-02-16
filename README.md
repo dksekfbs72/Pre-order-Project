@@ -33,3 +33,10 @@ https://dull-apogee-965.notion.site/6df35cdb93dd43939d1c37b998f14074?v=d1df5713b
 2. ./gradlew build
 ### - docker-compose 시작
 1. docker-compose up
+
+<br>
+
+## 5. 개발 환경
+JavaVersion - 17
+SpringBoot - 3.2.2
+DockerVersion - 3.9
