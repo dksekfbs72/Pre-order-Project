@@ -78,68 +78,68 @@ services:
     networks:
       - preorder-network
 
-  user_service:
-    container_name: userService
-    build:
-      context: ./
-      dockerfile: UserServiceDockerfile
-    ports:
-      - "8080:8080"
-    env_file:
-      - preorder.env
-    environment:
-      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://user_service_db:3306/preorder
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootPassword
-      - SPRING_DATA_REDIS_HOST=redis
-    networks:
-      - preorder-network
-    depends_on:
-      user_service_db:
-        condition: service_healthy
-
-  activity_service:
-    container_name: activityService
-    build:
-      context: ./
-      dockerfile: ActivityServiceDockerfile
-    ports:
-      - "8081:8081"
-    env_file:
-      - preorder.env
-    environment:
-      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://activity_service_db:3306/preorder
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootPassword
-      - SPRING_DATA_REDIS_HOST=redis
-    networks:
-      - preorder-network
-    depends_on:
-      activity_service_db:
-        condition: service_healthy
-
-  news_feed_service:
-    container_name: newsFeedService
-    build:
-      context: ./
-      dockerfile: NewsFeedServiceDockerfile
-    ports:
-      - "8082:8082"
-    env_file:
-      - preorder.env
-    environment:
-      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
-      - SPRING_DATASOURCE_URL=jdbc:mysql://news_feed_service_db:3306/preorder
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootPassword
-      - SPRING_DATA_REDIS_HOST=redis
-    networks:
-      - preorder-network
-    depends_on:
-      news_feed_service_db:
-        condition: service_healthy
+#  user_service:
+#    container_name: userService
+#    build:
+#      context: ./
+#      dockerfile: UserServiceDockerfile
+#    ports:
+#      - "8080:8080"
+#    env_file:
+#      - preorder.env
+#    environment:
+#      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
+#      - SPRING_DATASOURCE_URL=jdbc:mysql://user_service_db:3306/preorder
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=rootPassword
+#      - SPRING_DATA_REDIS_HOST=redis
+#    networks:
+#      - preorder-network
+#    depends_on:
+#      user_service_db:
+#        condition: service_healthy
+#
+#  activity_service:
+#    container_name: activityService
+#    build:
+#      context: ./
+#      dockerfile: ActivityServiceDockerfile
+#    ports:
+#      - "8081:8081"
+#    env_file:
+#      - preorder.env
+#    environment:
+#      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
+#      - SPRING_DATASOURCE_URL=jdbc:mysql://activity_service_db:3306/preorder
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=rootPassword
+#      - SPRING_DATA_REDIS_HOST=redis
+#    networks:
+#      - preorder-network
+#    depends_on:
+#      activity_service_db:
+#        condition: service_healthy
+#
+#  news_feed_service:
+#    container_name: newsFeedService
+#    build:
+#      context: ./
+#      dockerfile: NewsFeedServiceDockerfile
+#    ports:
+#      - "8082:8082"
+#    env_file:
+#      - preorder.env
+#    environment:
+#      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
+#      - SPRING_DATASOURCE_URL=jdbc:mysql://news_feed_service_db:3306/preorder
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=rootPassword
+#      - SPRING_DATA_REDIS_HOST=redis
+#    networks:
+#      - preorder-network
+#    depends_on:
+#      news_feed_service_db:
+#        condition: service_healthy
 
 networks:
   preorder-network:
