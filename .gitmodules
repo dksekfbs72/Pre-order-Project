@@ -10,3 +10,6 @@
 [submodule "ApiGateway"]
 	path = ApiGateway
 	url = https://github.com/dksekfbs72/ApiGateway.git
+[submodule "StockManagementService"]
+    path = StockManagementService
+    url = https://github.com/dksekfbs72/StockManagementService.git
