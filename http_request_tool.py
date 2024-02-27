@@ -5,7 +5,7 @@ import time
 def send_http_request(url):
     try:
         start_time = time.time()  # 요청 시작 시간 기록
-        response = requests.put(url)
+        response = requests.post(url)
         end_time = time.time()  # 요청 완료 시간 기록
         print(f"Request to {url} completed with status code {response.status_code}. Time taken: {end_time - start_time:.2f} seconds")
     except Exception as e:
@@ -13,15 +13,15 @@ def send_http_request(url):
 
 def main():
     # Set the number of concurrent requests (N)
-    num_requests = 500
+    num_requests = 10000
 
     # Base URL
-    base_url = "http://host.docker.internal:8083/activity/order"
+    base_url = "http://host.docker.internal:8083/activity/order?productId=9"
 
     # Create a ThreadPoolExecutor to send concurrent requests
     with ThreadPoolExecutor(max_workers=num_requests) as executor:
         # Use a list comprehension to create a list of tasks
-        tasks = [executor.submit(send_http_request, f"{base_url}?orderId={order_id}") for order_id in range(1, num_requests + 1)]
+        tasks = [executor.submit(send_http_request, base_url) for _ in range(num_requests)]
 
         # Wait for all tasks to complete
         for future in tasks:
