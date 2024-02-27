@@ -48,7 +48,7 @@ Redis의 인메모리 데이터 저장 방식은 매우 빠른 읽기 및 쓰기
 
 Java : 17<br>
 Spring Boot : 3.2.2<br>
-DockerVersion : 3.9
+DockerVersion : 3.9<br>
 MySQL : 8.0.31
 
 ### - UserService Build
