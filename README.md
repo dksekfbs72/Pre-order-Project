@@ -18,6 +18,12 @@ https://dull-apogee-965.notion.site/6df35cdb93dd43939d1c37b998f14074?v=d1df5713b
 - 포스팅, 댓글, 좋아요, 팔로우 등 SNS 활동 API 모듈
 ### - NewsFeedService 모듈
 - 뉴스피드 읽기, 검색 API 모듈
+### - ProductService 모듈
+- 상품 목록, 상품 등록 등 상품 관련 API 모듈
+### - OrderService 모듈
+- 주문 확인, 주문, 결제 모듈
+### - StockService 모듈
+- 실시간 재고 관리 모듈
 
 <br>
 
