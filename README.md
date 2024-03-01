@@ -12,15 +12,19 @@
 
 ### docker-compose 시작
 
+```
 1. ./gradlew build
 2. docker-compose up
+```
 
 ### Test 코드 실행 (주문 시도 1만회)
 -> 임의의 상품을 추가하고 해당 상품을 1만회 동시에 주문합니다.
 <br>
+
+```
 1. docker build -t http_request_tool .
 2. docker run http_request_tool
-
+```
 
 
 ### API 문서
