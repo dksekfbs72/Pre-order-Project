@@ -53,7 +53,7 @@ https://dull-apogee-965.notion.site/6df35cdb93dd43939d1c37b998f14074?v=d1df5713b
 ![img.png](ERD.png)
 
 ### 소프트웨어 아키텍처
-![img_1.png](architecture.png)
+![image](https://github.com/dksekfbs72/Pre-order-Project/assets/85275305/42ad2046-ced7-4886-ac1a-ae6baa482da4)
 
 <br>
 
